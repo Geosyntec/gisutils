@@ -6,4 +6,8 @@ Paul Hobson, Portland (phobson@geosyntec.com)
 R. Dylan Walker, Columbia, MD (rwalker@geosyntec.com)
 '''
 
-import arcpy
+try: 
+    import arcpy.mapping as mapping    
+except ImportError:
+    print "Error: Can not import ArcPy. Make sure you have ArcGIS Installed."
+    temp = raw_input("Press enter to exit.")
