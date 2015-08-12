@@ -21,7 +21,7 @@ class Extension(object):
     >>> with gisutils.Extension("spatial") as ext:
     >>> ... # spatial analyst is automatically checked out
     >>> ... # do some spatial analyst stuff
-    >>> x = 1 # SA is automatically checked back in
+    >>> # SA is automatically checked back in once you exit
     """
     def __init__(self, name):
         self.name = name
@@ -55,10 +55,12 @@ class OverwriteState(object):
     >>> import gisutils
     >>> arcpy.env.overwriteOutput = False # permanent state
     >>> with gisutils.OverwriteState(True) as state:
-    >>> ... # overwriteOutput is not True
+    >>> ... print(arcpy.env.overwriteOutput)
     >>> ... # do stuff
-    >>> x = 1
-    >>> # overwriteOutput is False again
+    True
+    >>> # then once we're out of the with block:
+    >>> print(arcpy.env.overwriteOutput)
+    False
 
     """
 
@@ -74,7 +76,7 @@ class OverwriteState(object):
 
 
 class EasyMapDoc(object):
-    """ Easy-to-use, extenisble map map document
+    """ Easy-to-use, extenisble map document
 
     arcpy.mapping.MapDocuments are a pain in the ass.
     You'd think you'd be able to do something like:
