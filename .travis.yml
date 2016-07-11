@@ -27,19 +27,21 @@ before_install:
   - chmod +x miniconda.sh
   - ./miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
-  - conda update --yes conda
-  - conda install --yes nomkl
+  - conda config --set always_yes true
+  - conda config --add channels conda-forge
+  - conda update conda
+  - conda install nomkl
 
 install:
 
   # We just set up a conda environment with the right Python version. This
   # should not need changing.
 
-  - conda create --yes -n test python=$TRAVIS_PYTHON_VERSION
+  - conda create -n test python=$TRAVIS_PYTHON_VERSION
   - source activate test
-  - conda install --yes --channel=conda-forge docopt requests pyyaml
-  - conda install --yes --channel=conda-forge numpy matplotlib rasterio fiona
-  - conda install --yes --channel=conda-forge pytest mock pytest-mpl coverage
+  - conda install docopt requests pyyaml
+  - conda install numpy matplotlib rasterio fiona
+  - conda install pytest mock pytest-mpl coverage
   - pip install codecov
   - pip install .
 
