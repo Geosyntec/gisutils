@@ -1,0 +1,23 @@
+# .coveragerc to control coverage.py
+[run]
+source = gisutils
+branch = True
+include = gisutils/*.py
+omit =
+    gisutils/tests/*
+
+[report]
+include = gisutils/*.py
+ignore_errors = True
+omit =
+    gisutils/tests/*
+
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if self.debug:
+    if settings.DEBUG
+    raise AssertionError
+    raise NotImplementedError
+    if 0:
