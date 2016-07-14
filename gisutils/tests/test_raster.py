@@ -1,3 +1,5 @@
+from pkg_resources import resource_filename
+
 import pytest
 import numpy.testing as nptest
 
@@ -5,6 +7,26 @@ import numpy
 from affine import Affine
 
 from gisutils import raster
+
+
+def test_load():
+    demfile = resource_filename('gisutils.tests._data.raster', 'powell_butte.png')
+    dem, meta = raster.load(demfile)
+
+    expected_meta = {
+        'transform': (649635.0, 30.0, 0.0, 4901415.0, 0.0, -30.0),
+        'crs': {'init': 'epsg:26710'},
+        'height': 474,
+        'width': 348,
+        'nodata': None,
+        'driver': 'PNG',
+        'count': 1,
+        'affine': Affine(30.0, 0.0, 649635.0, 0.0, -30.0, 4901415.0),
+        'dtype': 'uint8'
+
+    }
+    assert meta == expected_meta
+    assert dem.shape == (meta['height'], meta['width'])
 
 
 @pytest.mark.parametrize(('affine', 'xy', 'expected_rowcol'), [
