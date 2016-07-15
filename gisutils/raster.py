@@ -7,9 +7,9 @@ def load(rasterfile, bands=None):
     if bands is None:
         bands = 0
 
-    with rasterio.open(rasterfile, 'r') as raster:
-        meta = raster.meta
-        data = raster.read()
+    with rasterio.open(rasterfile, 'r') as r:
+        meta = r.meta
+        data = r.read()
 
     return data[0, :, :], meta
 
@@ -101,5 +101,5 @@ def xy_to_rowcol(x, y, affine):
     vector = numpy.linalg.solve(Affine, transformed)
 
     # return whole number index
-    rowcol = numpy.floor(vector).astype(int)[:2, :]
-    return rowcol
+    col, row = numpy.floor(vector).astype(int)[:2, :]
+    return row, col
