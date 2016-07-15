@@ -40,13 +40,13 @@ install:
   - conda create -n test python=$TRAVIS_PYTHON_VERSION
   - source activate test
   - conda install docopt requests pyyaml
-  - conda install numpy matplotlib rasterio fiona
+  - conda install numpy scipy matplotlib geopandas pandas rasterio fiona gdal
   - conda install pytest mock pytest-mpl coverage
   - pip install codecov
   - pip install .
 
 script:
-  - python check_gisutils.py ${ARGS}
+  - python check_gisutils.py
 
 after_success:
   - if [ ${COVERAGE} = true ]; then
