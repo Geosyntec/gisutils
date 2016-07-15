@@ -1,2 +1,2 @@
 # GISUtils
-Python scripts for ArcGIS.  To use, must have ArcGIS Installed on your PC.
+Miscellaneous GIS-y things. GIS Sucks. Maybe this will make it suck less 
