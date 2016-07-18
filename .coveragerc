@@ -5,12 +5,14 @@ branch = True
 include = gisutils/*.py
 omit =
     gisutils/tests/*
+    gisutils/mapping.py
 
 [report]
 include = gisutils/*.py
 ignore_errors = True
 omit =
     gisutils/tests/*
+    gisutils/mapping.py
 
 # Regexes for lines to exclude from consideration
 exclude_lines =
