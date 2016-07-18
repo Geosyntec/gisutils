@@ -33,7 +33,7 @@ def Extension(name):
     Examples
     --------
     >>> import gisutils, arcpy
-    >>> with gisgisutils.mapping.mapping.Extension("spatial"):
+    >>> with gisutils.mapping.Extension("spatial"):
     ...     arcpy.sa.Hillshade("C:/data/dem.tif")
 
     """
@@ -98,7 +98,7 @@ def WorkSpace(path):
     Examples
     --------
     >>> import propagator
-    >>> with gisgisutils.mapping.mapping.OverwriteState(False):
+    >>> with gisutils.mapping.OverwriteState(False):
     ...     # some operation that should fail if output already exists
 
     """
