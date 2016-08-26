@@ -28,27 +28,34 @@ def test_load():
     assert dem.shape == (meta['height'], meta['width'])
 
 
-@pytest.mark.parametrize(('affine', 'xy', 'expected_rowcol'), [
-    (Affine(2.568, 1.500, 5, 1.500, -2.568, 15), (23, 13), ((3,), (4,))),
-    (Affine(1.500, 2.568, 5, 2.568, -1.500, 15), (28, 28), ((4,), (7,))),
-    (Affine(2.212, 2.212, 5, 2.212, -2.212, 15), (13, 17), ((1,), (2,))),
-    (Affine(2.212, 2.212, 5, 2.212, -2.212, 15), ((13, 19), (17, 25)), ((1, 0), (2, 5))),
+@pytest.fixture
+def base_affine(rotation):
+    return Affine.translation(5, 15) * Affine.rotation(rotation) * Affine.scale(3, -3)
+
+
+@pytest.mark.parametrize(('rotation', 'xy', 'expected_rowcol'), [
+    (30, (23, 13), ((3,), (4,))),
+    (60, (28, 28), ((4,), (7,))),
+    (45, (15, 10), ((3,), (1,))),
+    (45, ((13, 19), (17, 25)), ((1, 0), (2, 5))),
 ])
-def test_xy_to_rowcol(affine, xy, expected_rowcol):
+def test_xy_to_rowcol(rotation, xy, expected_rowcol):
     x, y = xy
+    affine = base_affine(rotation)
     rowcol = raster.xy_to_rowcol(x, y, affine)
 
     nptest.assert_array_equal(rowcol, numpy.array(expected_rowcol))
 
 
-@pytest.mark.parametrize(('affine', 'rowcol', 'expected_xy'), [
-    (Affine(2.568, 1.500, 5, 1.500, -2.568, 15), ((4,), (3,)), (19.772, 13.296)),
-    (Affine(1.500, 2.568, 5, 2.568, -1.500, 15), ((7,), (4,)), (25.772, 26.976)),
-    (Affine(2.212, 2.212, 5, 2.212, -2.212, 15), ((2,), (1,)), (11.636, 17.212)),
-    (Affine(2.212, 2.212, 5, 2.212, -2.212, 15), ((2, 5), (1, 0)), ((11.636, 16.060), (17.212, 26.060))),
+@pytest.mark.parametrize(('rotation', 'rowcol', 'expected_xy'), [
+    (30, ((4,), (3,)), (18.794,  9.108)),
+    (60, ((4,), (7,)), (25.892,  27.187)),
+    (45, ((2,), (1,)), (11.364, 12.879)),
+    (45, ((2, 5), (1, 0)), ((11.364, 15.607), (12.879, 4.393))),
 ])
-def test_rowcol_to_xy(affine, rowcol, expected_xy):
+def test_rowcol_to_xy(rotation, rowcol, expected_xy):
+    affine = base_affine(rotation)
     row, col, = rowcol
     xy = raster.rowcol_to_xy(row, col, affine)
 
-    nptest.assert_array_almost_equal(xy.ravel(), numpy.array(expected_xy).ravel())
+    nptest.assert_array_almost_equal(xy.ravel(), numpy.array(expected_xy).ravel(), decimal=3)
