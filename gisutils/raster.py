@@ -24,7 +24,7 @@ def rowcol_to_xy(rows, cols, affine):
 
     # filler
     layers = numpy.ones_like(rows)
-    vector = numpy.array([rows, cols, layers])
+    vector = numpy.array([cols, rows, layers])
 
     xy = numpy.dot(Affine, vector)[:2, :]
     return xy
@@ -92,13 +92,13 @@ def xy_to_rowcol(x, y, affine):
     ones = numpy.ones_like(x)
 
     # make in a 3x3 matrix
-    Affine = numpy.array(affine).reshape((3, 3))
+    _aff = numpy.array(affine).reshape((3, 3))
 
     # make a 3x1 vector
     transformed = numpy.array([x, y, ones])
 
     # solve the system
-    vector = numpy.linalg.solve(Affine, transformed)
+    vector = numpy.linalg.solve(_aff, transformed)
 
     # return whole number index
     col, row = numpy.floor(vector).astype(int)[:2, :]
