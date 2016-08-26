@@ -1,4 +1,5 @@
 import numpy
+from affine import Affine
 import rasterio
 
 from gisutils import validate
@@ -16,17 +17,54 @@ def load(rasterfile, bands=None):
 
 def rowcol_to_xy(rows, cols, affine):
     """
-    Convert (rows, cols) raster column and row indices to coordinates based
-    on the affine transformation of the raster.
+    Convert (rows, cols) raster row and column indices to geographic
+    coordinates based on the affine transformation of the raster.
+
+    Parameters
+    ----------
+    rows, cols : array-like
+        One dimensional arrays representing the row and column indices
+        to be converted to real-world coordinates.
+    affine : affine.Affine or numpy array
+        The affine object or a 3x3 numpy array that defines the
+        transformation.
+
+    Returns
+    -------
+    xy : array
+        An Nx2 array of the x- and y- coordinates. This can be unpacked
+        into the individual sets.
+
+    Examples
+    --------
+    >>> from affine import Affine
+    >>> from gisutils import raster
+    >>> translate = Affine.translation(5, 15)
+    >>> rotate = Affine.rotation(30)
+    >>> scale = Affine.scale(3, -3)
+    >>> transformation = translate * rotate * scale
+    >>> x, y = raster.rowcol_to_xy([2, 4, 5, 7], [8, 3, 4, 4], transformation)
+    >>> print(x)
+    [ 27.28460969  18.79422863  22.89230485  25.89230485]
+
+    >>> print(y)
+    [ 24.40192379   9.10769515   8.00961894   2.81346652]
+
     """
+
     # make it a 3x3 matrix
-    Affine = numpy.array(affine).reshape((3, 3))
+    aff_array = numpy.array(affine).reshape((3, 3))
+
+    # check that rows amd cols are indeed 1-D vectors
+    rows = validate.is_vector(rows)
+    cols = validate.is_vector(cols)
 
     # filler
     layers = numpy.ones_like(rows)
     vector = numpy.array([cols, rows, layers])
 
-    xy = numpy.dot(Affine, vector)[:2, :]
+    # compute xy
+    xy = numpy.dot(aff_array, vector)[:2, :]
     return xy
 
 
@@ -35,71 +73,48 @@ def xy_to_rowcol(x, y, affine):
     Convert (x, y) coordinates to raster column and row indices based on
     the affine transformation of the raster.
 
-
-    Paramaters
+    Parameters
     ----------
-    x, y : float
-        Easting/Northing (lon/lat) coorindates to be transformed.
-    affine : numpy array (3-by-3) or ``affine.Affine`` object.
-        See notes below for more information
+    x, yarray-like
+        One dimensional arrays representing the x and y coorindates
+        to be converted to raster/array indicesraste.
+    affine : affine.Affine or numpy array
+        The affine object or a 3x3 numpy array that defines the
+        transformation.
 
     Returns
     -------
-    rowcol : array of ints
-        The row and column indicies of the pixel in the raster
-        corresponding to ``x`` and ``y``.
+    rowcol : array
+        An Nx2 array of the row- and column- indices. This can be
+        unpacked into the individual sets.
 
-    Notes
-    -----
-    Effectively, this uses numpy to solve the linear algebra problem
-
-    .. math::
-
-        t = Av
-
-    Where ``t`` is transformed column vector with elements ``[x, y, 1]``
-    and A is the matrix that defines the affine transformation:
-
-    .. code::
-
-        | a  b  c |
-        | d  e  f |
-        | 0  0  1 |
-
-    Where:
-
-        a : rate of change of X with respect to increasing column,
-            i.e. pixel width.
-        b : rotation, 0 if the raster is oriented "north up".
-        c : X coordinate of the top left corner of the top left pixel.
-        d : rotation, 0 if the raster is oriented "north up".
-        e : rate of change of Y with respect to increasing row,
-            usually a negative number (i.e. -1 * pixel height) if
-            north-up.
-        f : Y coordinate of the top left corner of the top left pixel.
-
-    The result is a column vector with the elements ``[row, col, 1]``
-
-    Where:
-
-        row : row index of the nearest pixel.
-        col : column index of the nearest pixel.
+    Examples
+    --------
+    >>> from affine import Affine
+    >>> from gisutils import raster
+    >>> translate = Affine.translation(5, 15)
+    >>> rotate = Affine.rotation(30)
+    >>> scale = Affine.scale(3, -3)
+    >>> transformation = translate * rotate * scale
+    >>> x = [ 29.,  19.,  23.,  26.]
+    >>> y = [ 22.,   9.,   8.,   3.]
+    >>> raster.xy_to_rowcol(x, y, transformation)
+    array([[1, 4, 5, 6],
+           [8, 3, 4, 4]])
 
     """
+    # affine might be an Affine object, might be 3x3 array or
+    # 9-element vector. Let's first make damn sure is a 9-element
+    # vector
+    aff_array = numpy.array(affine).reshape(9)
 
-    x = validate.is_vector(x)
-    y = validate.is_vector(y)
-    ones = numpy.ones_like(x)
+    # now be damn sure we have an Affine object, and reverse it to
+    # go from coordinates to indices
+    affine = ~Affine(*aff_array[:6])
 
-    # make in a 3x3 matrix
-    _aff = numpy.array(affine).reshape((3, 3))
+    # compute the y, x values
+    yx = numpy.floor(rowcol_to_xy(y, x, affine))
 
-    # make a 3x1 vector
-    transformed = numpy.array([x, y, ones])
-
-    # solve the system
-    vector = numpy.linalg.solve(_aff, transformed)
-
-    # return whole number index
-    col, row = numpy.floor(vector).astype(int)[:2, :]
-    return row, col
+    # convert to int and flip to xy
+    xy = yx.astype(int)[::-1]
+    return xy
