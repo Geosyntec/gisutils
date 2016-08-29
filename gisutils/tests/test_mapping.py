@@ -1,12 +1,17 @@
+import sys
 import os
 from pkg_resources import resource_filename
 
+import pytest
+
+import mock
+
 try:
     import arcpy
+    _NO_ARCPY = False
 except ImportError:
-    arcpy = None
-
-import pytest
+    _NO_ARCPY = True
+    arcpy = mock.MagicMock()
 
 from gisutils import mapping
 
@@ -15,6 +20,7 @@ rasterpath = resource_filename("gisutils.tests._data.mapping.load_data", 'test_d
 vectorpath = resource_filename("gisutils.tests._data.mapping.load_data", 'test_wetlands.shp')
 
 
+@pytest.mark.skipif(_NO_ARCPY, reason='No arcpy')
 @pytest.mark.parametrize(('filename', 'filetype', 'objtype', 'greedy'), [
     (rasterpath, 'JUNK', None, False),
     ('junk.shp', 'grid', None, False),
@@ -27,9 +33,7 @@ vectorpath = resource_filename("gisutils.tests._data.mapping.load_data", 'test_w
     (rasterpath, 'gRId', arcpy.Raster, False),
     (rasterpath, 'layer', arcpy.mapping.Layer, False),
     (rasterpath, 'layer', arcpy.Raster, True),
-
 ])
-@pytest.mark.skipif(arcpy is None, reason='No arcpy')
 def test_load_data(filename, filetype, objtype, greedy):
     if objtype is None:
         with pytest.raises(ValueError):
@@ -39,7 +43,7 @@ def test_load_data(filename, filetype, objtype, greedy):
         assert isinstance(data, objtype)
 
 
-@pytest.mark.skipif(arcpy is None, reason='No arcpy')
+@pytest.mark.skipif(_NO_ARCPY, reason='No arcpy')
 class Test_EasyMapDoc(object):
     def setup(self):
         self.mxd = resource_filename("propagator.testing.EasyMapDoc", "test.mxd")
