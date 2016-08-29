@@ -1,112 +1,63 @@
-from contextlib import contextmanager
-from functools import wraps
-import warnings
-import os
+from gisutils.crapy import check_arcpy
+try:
+    import arcpy
+except ImportError:
+    arcpy = None
 
 
-def check_arcpy(func):  # pragma: no cover
-    """ Decorator to allow a function to take a additional keyword
-    arguments related to printing status messages to stdin or as arcpy
-    messages.
-    """
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            global arcpy
-            import arcpy
-            return func(*args, **kwargs)
-        except ImportError:
-            raise RuntimeError('`arcpy` is not available on this system')
-
-    return wrapper
-
-
-@contextmanager
 @check_arcpy
-def Extension(name):
-    """ Context manager to facilitate the use of ArcGIS extensions
+def load_data(datapath, datatype, greedyRasters=True, **verbosity):
+    """ Loads vector and raster data from filepaths.
 
-    Inside the context manager, the extension will be checked out. Once
-    the interpreter leaves the code block by any means (e.g., successful
-    execution, raised exception) the extension will be checked back in.
+    Parameters
+    ----------
+    datapath : str, arcpy.Raster, or arcpy.mapping.Layer
+        The (filepath to the) data you want to load.
+    datatype : str
+        The type of data you are trying to load. Must be either
+        "shape" (for polygons) or "raster" (for rasters).
+    greedyRasters : bool (default = True)
+        Currently, arcpy lets you load raster data as a "Raster" or as a
+        "Layer". When ``greedyRasters`` is True, rasters loaded as type
+        "Layer" will be forced to type "Raster".
 
-    Examples
-    --------
-    >>> import gisutils, arcpy
-    >>> with gisutils.mapping.Extension("spatial"):
-    ...     arcpy.sa.Hillshade("C:/data/dem.tif")
+    Returns
+    -------
+    data : `arcpy.Raster`_ or `arcpy.mapping.Layer`_
+        The data loaded as an arcpy object.
+
+    .. _arcpy.Raster: http://goo.gl/AQgFXW
+    .. _arcpy.mapping.Layer: http://goo.gl/KfrGNa
 
     """
 
-    if arcpy.CheckExtension(name) == u"Available":
-        status = arcpy.CheckOutExtension(name)
-        yield status
+    dtype_lookup = {
+        'raster': arcpy.Raster,
+        'grid': arcpy.Raster,
+        'shape': arcpy.mapping.Layer,
+        'layer': arcpy.mapping.Layer,
+    }
+
+    try:
+        objtype = dtype_lookup[datatype.lower()]
+    except KeyError:
+        msg = "Datatype {} not supported. Must be raster or layer".format(datatype)
+        raise ValueError(msg)
+
+    # if the input is already a Raster or Layer, just return it
+    if isinstance(datapath, objtype):
+        data = datapath
+    # otherwise, load it as the datatype
     else:
-        raise RuntimeError("%s license isn't available" % name)
+        try:
+            data = objtype(datapath)
+        except:
+            raise ValueError("could not load {} as a {}".format(datapath, objtype))
 
-    arcpy.CheckInExtension(name)
+    if greedyRasters and isinstance(data, arcpy.mapping.Layer) and data.isRasterLayer:
+        data = arcpy.Raster(datapath)
 
-
-@contextmanager
-@check_arcpy
-def OverwriteState(state):
-    """ Context manager to temporarily set the ``overwriteOutput``
-    environment variable.
-
-    Inside the context manager, the ``arcpy.env.overwriteOutput`` will
-    be set to the given value. Once the interpreter leaves the code
-    block by any means (e.g., successful execution, raised exception),
-    ``arcpy.env.overwriteOutput`` will reset to its original value.
-
-    Parameters
-    ----------
-    path : str
-        Path to the directory that will be set as the current workspace.
-
-    Examples
-    --------
-    >>> import gisutils
-    >>> with gisutils.mapping.OverwriteState(False):
-    ...     # some operation that should fail if output already exists
-
-    """
-
-    orig_state = arcpy.env.overwriteOutput
-    arcpy.env.overwriteOutput = bool(state)
-    yield state
-    arcpy.env.overwriteOutput = orig_state
-
-
-@contextmanager
-@check_arcpy
-def WorkSpace(path):
-    """ Context manager to temporarily set the ``workspace``
-    environment variable.
-
-    Inside the context manager, the `arcpy.env.workspace`_ will
-    be set to the given value. Once the interpreter leaves the code
-    block by any means (e.g., successful execution, raised exception),
-    `arcpy.env.workspace`_ will reset to its original value.
-
-    .. _arcpy.env.workspace: http://goo.gl/0NpeFN
-
-    Parameters
-    ----------
-    path : str
-        Path to the directory that will be set as the current workspace.
-
-    Examples
-    --------
-    >>> import propagator
-    >>> with gisutils.mapping.OverwriteState(False):
-    ...     # some operation that should fail if output already exists
-
-    """
-
-    orig_workspace = arcpy.env.workspace
-    arcpy.env.workspace = path
-    yield path
-    arcpy.env.workspace = orig_workspace
+    return data
 
 
 @check_arcpy
