@@ -75,7 +75,7 @@ def xy_to_rowcol(x, y, affine):
 
     Parameters
     ----------
-    x, yarray-like
+    x, y : array-like
         One dimensional arrays representing the x and y coorindates
         to be converted to raster/array indicesraste.
     affine : affine.Affine or numpy array
