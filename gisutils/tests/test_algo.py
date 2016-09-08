@@ -7,11 +7,11 @@ from gisutils import algo
 def test_average_slope():
     
     _lines = [
-        geometry.LineString(coordinates=[(0, 5), (10, 5)]), # across the center (slope = 1)
-        geometry.LineString(coordinates=[(5, 0), (5, 10)]), # up the center (slope = 0)
-        geometry.LineString(coordinates=[(0, 0), (10, 10)]), # corner to corner (slope ~0.707)
-        geometry.LineString(coordinates=[(0, 0), (0, 10), (10, 10)]), # corner to corner to corner (slope = 0.5)
-        geometry.LineString(coordinates=[(0, 0), (5, 5), (5, 0), (0, 0)]), # loops back to start (slope = 0)
+        geometry.LineString(coordinates = [(0, 5), (10, 5)]), # across the center (slope = 1)
+        geometry.LineString(coordinates = [(5, 0), (5, 10)]), # up the center (slope = 0)
+        geometry.LineString(coordinates = [(0, 0), (10, 10)]), # corner to corner (slope ~0.707)
+        geometry.LineString(coordinates = [(0, 0), (0, 10), (10, 10)]), # corner to corner to corner (slope = 0.5)
+        geometry.LineString(coordinates = [(0, 0), (5, 5), (5, 0), (0, 0)]), # loops back to start (slope = 0)
     ]
 
     lines = geopandas.GeoDataFrame(geometry = _lines)
@@ -30,4 +30,4 @@ def test_average_slope():
     
     result = algo.average_slope(lines, hill, trans)
 
-    assert numpy.allclose(result.average_slope , expected)
+    assert numpy.allclose(result.average_slope, expected)

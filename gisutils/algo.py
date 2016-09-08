@@ -1,6 +1,6 @@
 from gisutils import raster
 
-def average_slope(df, dem, dem_aff):
+def average_slope(gdf, dem, dem_affine):
     """
     Computes the average slope between the first and last coordinates of 
     a line using the elevations from a reference Digital Elevation Map.
@@ -10,9 +10,9 @@ def average_slope(df, dem, dem_aff):
 
     Parameters
     ----------
-    df : pandas.DataFrame
+    gdf : GeoDataFrame
     dem : array
-    dem_aff : affine.Affine
+    dem_affine : affine.Affine
     
     
     Returns
@@ -21,23 +21,19 @@ def average_slope(df, dem, dem_aff):
     
     """
     
-    df = df.copy() #this may not be necessary since the function has it's own namespace
+    length = gdf['geometry'].length
+    x1 = gdf['geometry'].apply(lambda g: g.coords[0][0])
+    y1 = gdf['geometry'].apply(lambda g: g.coords[0][1])
+
+    x2 = gdf['geometry'].apply(lambda g: g.coords[-1][0])
+    y2 = gdf['geometry'].apply(lambda g: g.coords[-1][1])
     
-    for row in df.itertuples():
-        length = row.geometry.length
-        first_pt = row.geometry.coords[0]
-        last_pt = row.geometry.coords[-1]
-        ix = row.Index
+    r1, c1 = raster.xy_to_rowcol(x1, y1, dem_affine)
+    z1 = dem[r1,c1]
+    
+    r2, c2 = raster.xy_to_rowcol(x2, y2, dem_affine)
+    z2 = dem[r2,c2]
+    
 
-        r1, c1 = raster.xy_to_rowcol(*first_pt, affine = dem_aff)
-        elev1 = dem[r1,c1][0]
-        
-        r2, c2 = raster.xy_to_rowcol(*last_pt, affine = dem_aff)
-        elev2 = dem[r2,c2][0]
-
-        delta_elev = elev2 - elev1
-        avg_slope = delta_elev / length
-
-        df.loc[df.index[ix],'average_slope'] = avg_slope
-
-    return df
+    slope = (z2 - z1)/ length
+    return gdf.assign(avg_slope=slope)
