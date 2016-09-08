@@ -17,7 +17,7 @@ def average_slope(gdf, dem, dem_affine):
     
     Returns
     -------
-    pandas.DataFrame
+    GeoDataFrame
     
     """
     
