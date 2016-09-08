@@ -37,3 +37,4 @@ def average_slope(gdf, dem, dem_affine):
 
     slope = (z2 - z1)/ length
     return gdf.assign(avg_slope=slope)
+    
