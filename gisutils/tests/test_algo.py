@@ -30,4 +30,4 @@ def test_average_slope():
     
     result = algo.average_slope(lines, hill, trans)
 
-    assert numpy.allclose(result.average_slope, expected)
+    assert numpy.allclose(result.avg_slope, expected)
