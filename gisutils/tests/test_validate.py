@@ -61,4 +61,3 @@ def test_non_empty_list_default(obj, expected, err):
 def test_non_empty_list_create(obj, on_fail):
     result = validate.non_empty_list(obj, on_fail=on_fail)
     assert result == []
-
