@@ -1,4 +1,5 @@
 from shapely import geometry
+import pandas
 import geopandas
 import numpy
 from affine import Affine
@@ -19,16 +20,16 @@ def test_average_slope():
 
     lines = geopandas.GeoDataFrame(geometry=_lines)
 
-    expected = [
+    expected = pandas.Series([
         1.000000,
         0.000000,
         0.707107,
         0.500000,
         0.000000,
-    ]
+    ]) * 100
 
     hill = numpy.mgrid[:11, :11][1]
     trans = Affine.translation(0, 10) * Affine.rotation(0) * Affine.scale(1, -1)
     result = algo.average_slope(lines, hill, trans)
 
-    assert pdtest.assert_series_equal(result, expected)
+    pdtest.assert_series_equal(result, expected)
