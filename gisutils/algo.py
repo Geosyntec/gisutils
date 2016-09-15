@@ -1,40 +1,60 @@
+import numpy
+
 from gisutils import raster
 
-def average_slope(gdf, dem, dem_affine):
+
+def _get_nth_points_in_lines(gdf, pt_index):
+    x1 = gdf['geometry'].apply(lambda g: g.coords[pt_index][0])
+    y1 = gdf['geometry'].apply(lambda g: g.coords[pt_index][1])
+    return x1, y1
+
+
+def average_slope(gdf, dem, dem_affine, absolute=True, as_pct=True):
     """
-    Computes the average slope between the first and last coordinates of 
+    Computes the average slope between the first and last coordinates of
     a line using the elevations from a reference Digital Elevation Map.
 
-    Output DataFrame has new column `average_slope` containing the result
-    of the slope calculation (float).
+    Returns an `average_slope` GeoSeries (float) containing the result
+    of the slope calculation.
 
     Parameters
     ----------
-    gdf : GeoDataFrame
+    gdf : geopandas.GeoDataFrame
+        A geodataframe of simple line geometries.
     dem : array
+        Numeric array representing the digitize elevations of the area
+        of interest.
     dem_affine : affine.Affine
-    
-    
+        The affine transformation that places the DEM at the correct
+        location, scale, and rotation in geographic coordinates.
+    absolute : bool, optional
+        If True (default), the absolute value of the slope is returned.
+
     Returns
     -------
-    GeoDataFrame
-    
+    slope : geopandas.GeoSeries
+
+    Notes
+    -----
+    The input parameters need to to be in the same coordinate reference
+    system. This function does not reproject the information in any way.
+
     """
-    
-    length = gdf['geometry'].length
-    x1 = gdf['geometry'].apply(lambda g: g.coords[0][0])
-    y1 = gdf['geometry'].apply(lambda g: g.coords[0][1])
 
-    x2 = gdf['geometry'].apply(lambda g: g.coords[-1][0])
-    y2 = gdf['geometry'].apply(lambda g: g.coords[-1][1])
-    
+    # coords of the starts of the line
+    x1, y1 = _get_nth_points_in_lines(gdf, 0)
     r1, c1 = raster.xy_to_rowcol(x1, y1, dem_affine)
-    z1 = dem[r1,c1]
-    
-    r2, c2 = raster.xy_to_rowcol(x2, y2, dem_affine)
-    z2 = dem[r2,c2]
-    
 
-    slope = (z2 - z1)/ length
-    return gdf.assign(avg_slope=slope)
-    
+    # coords of the ends of the lines
+    x2, y2 = _get_nth_points_in_lines(gdf, -1)
+    r2, c2 = raster.xy_to_rowcol(x2, y2, dem_affine)
+
+    slope = (dem[r2, c2] - dem[r1, c1]) / gdf['geometry'].length
+    if absolute:
+        slope = numpy.abs(slope)
+
+    factor = 1
+    if as_pct:
+        factor = 100
+
+    return slope * factor
