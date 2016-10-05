@@ -41,12 +41,16 @@ install:
   - source activate test
   - conda install docopt requests pyyaml
   - conda install numpy scipy matplotlib geopandas pandas rasterio fiona gdal
-  - conda install pytest mock pytest-mpl coverage
+  - conda install pytest mock pytest-mpl coverage pytest-pep8
   - pip install codecov
   - pip install .
 
 script:
-  - python check_gisutils.py
+  - python check_gisutils.py ${ARGS}
+  - if [ ${COVERAGE} = true ]; then
+      python check_gisutils.py --pep8;
+    fi  
+    
 
 after_success:
   - if [ ${COVERAGE} = true ]; then
