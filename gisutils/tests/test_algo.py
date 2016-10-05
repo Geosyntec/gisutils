@@ -33,3 +33,22 @@ def test_average_slope():
     result = algo.average_slope(lines, hill, trans)
 
     pdtest.assert_series_equal(result, expected)
+
+def test_compute_sinuosity():
+    _lines = [
+        geometry.LineString(coordinates=[(0, 5), (10, 5)]),
+        geometry.LineString(coordinates=[(0, 0), (0, 10), (10, 10)]),
+        geometry.LineString(coordinates=[(0, 0), (5, 5), (5, 0), (0, 0)]),
+    ]
+
+    lines = geopandas.GeoDataFrame(geometry=_lines)
+
+    expected = pandas.Series([
+        1.000000,
+        1.414213,
+        numpy.inf,
+    ])
+
+    result = algo.compute_sinuosity(lines)
+
+    pdtest.assert_series_equal(result, expected)

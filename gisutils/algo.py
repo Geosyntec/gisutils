@@ -58,3 +58,43 @@ def average_slope(gdf, dem, dem_affine, absolute=True, as_pct=True):
         factor = 100
 
     return slope * factor
+
+def compute_sinuosity(gdf):
+    """
+    Computes the sinuosity between the first and last coordinates of
+    a line.
+
+    Returns a `sinuosity` GeoSeries (float) containing the result
+    of the sinuosity calculation.
+
+    Parameters
+    ----------
+    gdf : geopandas.GeoDataFrame
+        A geodataframe of simple line geometries.
+
+    Returns
+    -------
+    sinuosity : geopandas.GeoSeries
+
+    Notes
+    -----
+    The input parameters need to to be in the same coordinate reference
+    system. This function does not reproject the information in any way.
+
+    """
+
+    # coords of the starts of the line
+    x1, y1 = _get_nth_points_in_lines(gdf, 0)
+
+
+    # coords of the ends of the lines
+    x2, y2 = _get_nth_points_in_lines(gdf, -1)
+
+    dx = x2.values-x1.values
+    dy = y2.values-y1.values
+
+    distance = ((dx)**2 + (dy)**2)**.5
+
+    sinuosity = numpy.abs(gdf['geometry'].length / distance)
+
+    return sinuosity
