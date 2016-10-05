@@ -34,6 +34,7 @@ def test_average_slope():
 
     pdtest.assert_series_equal(result, expected)
 
+
 def test_compute_sinuosity():
     _lines = [
         geometry.LineString(coordinates=[(0, 5), (10, 5)]),
