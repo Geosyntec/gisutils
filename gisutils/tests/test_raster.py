@@ -5,6 +5,7 @@ import numpy.testing as nptest
 
 import numpy
 from affine import Affine
+from rasterio.crs import CRS
 
 from gisutils import raster
 
@@ -15,7 +16,7 @@ def test_load():
 
     expected_meta = {
         'transform': (649635.0, 30.0, 0.0, 4901415.0, 0.0, -30.0),
-        'crs': {'init': 'epsg:26710'},
+        'crs': CRS({'init': 'epsg:26710'}),
         'height': 474,
         'width': 348,
         'nodata': None,
@@ -24,6 +25,12 @@ def test_load():
         'affine': Affine(30.0, 0.0, 649635.0, 0.0, -30.0, 4901415.0),
         'dtype': 'uint8',
     }
+    # comparing raster CRS objects has been weird:
+    crs = meta.pop('crs')
+    expected_crs = expected_meta.pop('crs')
+    assert crs.data == expected_crs.data
+
+    # compare everything else as normal
     assert meta == expected_meta
     assert dem.shape == (meta['height'], meta['width'])
 
