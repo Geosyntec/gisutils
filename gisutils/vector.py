@@ -61,7 +61,7 @@ def _linear_distance(df, xcol, ycol):
     """
     Computes the distance along an x-y dataframe
     """
-    _dist = numpy.sqrt((df[xcol]-df[xcol].shift())**2 + (df[ycol]-df[ycol].shift())**2)
+    _dist = numpy.sqrt((df[xcol] - df[xcol].shift())**2 + (df[ycol] - df[ycol].shift())**2)
     dist = pandas.Series(_dist).fillna(0).cumsum()
     return dist
 

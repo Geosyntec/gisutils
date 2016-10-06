@@ -4,6 +4,7 @@ import rasterio
 
 from gisutils import validate
 
+
 def load(rasterfile, bands=None):
     if bands is None:
         bands = 0
