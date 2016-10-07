@@ -17,7 +17,7 @@ matrix:
     - python: 3.5
       env:
         - COVERAGE=true
-        - ARGS="--mpl --verbose"
+        - ARGS="--mpl --verbose --pep8"
 
 before_install:
 
@@ -47,10 +47,6 @@ install:
 
 script:
   - python check_gisutils.py ${ARGS}
-  - if [ ${COVERAGE} = true ]; then
-      python check_gisutils.py --pep8;
-    fi  
-    
 
 after_success:
   - if [ ${COVERAGE} = true ]; then

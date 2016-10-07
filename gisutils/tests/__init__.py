@@ -6,6 +6,6 @@ import gisutils
 
 
 def test(*args):
-    options = [resource_filename('gisutils', 'tests')]
+    options = [resource_filename('gisutils', '')]
     options.extend(list(args))
     return pytest.main(options)
