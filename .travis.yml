@@ -6,10 +6,6 @@ matrix:
       env:
         - COVERAGE=false
         - ARGS="--verbose"
-    - python: 3.4
-      env:
-        - COVERAGE=false
-        - ARGS="--mpl --verbose"
     - python: 3.5
       env:
         - COVERAGE=false
