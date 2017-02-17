@@ -10,10 +10,11 @@ def load(rasterfile, bands=None):
         bands = 0
 
     with rasterio.open(rasterfile, 'r') as r:
-        meta = r.meta
+        meta = r.meta.copy()
+        meta['crs'] = r.crs
         data = r.read()
 
-    return data[0, :, :], meta
+    return data[bands, :, :], meta
 
 
 def rowcol_to_xy(rows, cols, affine):
