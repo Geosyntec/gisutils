@@ -44,8 +44,8 @@ install:
   - conda create -n test python=$TRAVIS_PYTHON_VERSION
   - source activate test
   - conda install docopt requests pyyaml
-  - conda install numpy scipy matplotlib geopandas pandas rasterio fiona gdal
-  - conda install pytest mock pytest-mpl coverage pytest-pep8
+  - conda install numpy scipy matplotlib geopandas pandas rasterio fiona gdal --channel=conda-forge
+  - conda install pytest mock pytest-mpl coverage pytest-pep8 --channel=conda-forge
   - pip install codecov
   - pip install .
 
