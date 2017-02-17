@@ -6,15 +6,15 @@ matrix:
       env:
         - COVERAGE=false
         - ARGS="--verbose"
-    - python: 3.4
-      env:
-        - COVERAGE=false
-        - ARGS="--mpl --verbose"
     - python: 3.5
       env:
         - COVERAGE=false
         - ARGS="--mpl --verbose"
-    - python: 3.5
+    - python: 3.6
+      env:
+        - COVERAGE=false
+        - ARGS="--mpl --verbose"
+    - python: 3.6
       env:
         - COVERAGE=true
         - ARGS="--mpl --verbose --pep8"
@@ -40,8 +40,8 @@ install:
   - conda create -n test python=$TRAVIS_PYTHON_VERSION
   - source activate test
   - conda install docopt requests pyyaml
-  - conda install numpy scipy matplotlib geopandas pandas rasterio fiona gdal
-  - conda install pytest mock pytest-mpl coverage pytest-pep8
+  - conda install numpy scipy matplotlib geopandas pandas rasterio fiona gdal --channel=conda-forge
+  - conda install pytest mock pytest-mpl coverage pytest-pep8 --channel=conda-forge
   - pip install codecov
   - pip install .
 

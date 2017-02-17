@@ -15,19 +15,18 @@ def test_load():
     dem, meta = raster.load(demfile)
 
     expected_meta = {
-        'transform': (649635.0, 30.0, 0.0, 4901415.0, 0.0, -30.0),
-        'crs': CRS({'init': 'epsg:26710'}),
-        'height': 474,
-        'width': 348,
         'nodata': None,
         'driver': 'PNG',
-        'count': 1,
-        'affine': Affine(30.0, 0.0, 649635.0, 0.0, -30.0, 4901415.0),
+        'width': 348,
+        'transform': Affine(30.0, 0.0, 649635.0, 0.0, -30.0, 4901415.0),
         'dtype': 'uint8',
+        'height': 474,
+        'count': 1
     }
+
     # comparing raster CRS objects has been weird:
     crs = meta.pop('crs')
-    expected_crs = expected_meta.pop('crs')
+    expected_crs = CRS({'init': 'epsg:26710'})
     assert crs.data == expected_crs.data
 
     # compare everything else as normal
