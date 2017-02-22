@@ -3,8 +3,8 @@ import pandas
 import geopandas
 import numpy
 from affine import Affine
-from gisutils import algo
 
+from gisutils import algo
 
 import pandas.util.testing as pdtest
 

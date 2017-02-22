@@ -1,0 +1,52 @@
+package:
+  name: gisutils
+  version: v0.1.x
+
+source:
+  path: ../
+
+build:
+  number: 1
+  script: python setup.py install
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - numpy
+    - affine
+    - rasterio
+    - matplotlib
+    - scipy
+    - pandas
+    - geopandas
+
+  run:
+    - python
+    - numpy
+    - affine
+    - rasterio
+    - matplotlib
+    - scipy
+    - pandas
+    - geopandas
+
+test:
+  imports:
+    - gisutils
+
+  commands:
+    - python -c "import gisutils; gisutils.test()"
+
+  requires:
+    - python
+    - pytest
+
+about:
+  home: http://Geosyntec.github.io/gisutils/
+  license:  BSD License
+  summary: 'Conventient GIS things?'
+
+# See
+# http://docs.continuum.io/conda/build.html for
+# more information about meta.yaml/configure
