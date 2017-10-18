@@ -15,13 +15,14 @@ def test_load():
     dem, meta = raster.load(demfile)
 
     expected_meta = {
-        'nodata': None,
         'driver': 'PNG',
-        'width': 348,
-        'transform': Affine(30.0, 0.0, 649635.0, 0.0, -30.0, 4901415.0),
         'dtype': 'uint8',
+        'nodata': None,
+        'width': 348,
         'height': 474,
-        'count': 1
+        'count': 1,
+        'transform': (649635.0, 30.0, 0.0, 4901415.0, 0.0, -30.0),
+        'affine': Affine(30.0, 0.0, 649635.0, 0.0, -30.0, 4901415.0)
     }
 
     # comparing raster CRS objects has been weird:
