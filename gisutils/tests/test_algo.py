@@ -6,6 +6,7 @@ from affine import Affine
 
 from gisutils import algo
 
+import numpy.testing as nptest
 import pandas.util.testing as pdtest
 
 
@@ -53,3 +54,20 @@ def test_compute_sinuosity():
     result = algo.compute_sinuosity(lines)
 
     pdtest.assert_series_equal(result, expected)
+
+
+def test_bearing_from_north():
+    gdf = geopandas.GeoDataFrame(
+        data=[1, 2, 3, 4, 5],
+        geometry=[
+            geometry.Point(0, 0),
+            geometry.Point(2, 2),
+            geometry.Point(4, 0),
+            geometry.Point(2, -2),
+            geometry.Point(0, 0)
+        ]
+    )
+
+    result = algo.bearing_from_north(gdf)
+    expected = numpy.array((numpy.nan, 1, 3, 5, 7)) * numpy.pi / 4
+    nptest.assert_array_equal(result, expected)

@@ -98,3 +98,43 @@ def compute_sinuosity(gdf):
     sinuosity = numpy.abs(gdf['geometry'].length / distance)
 
     return sinuosity
+
+
+def bearing_from_north(gdf, shift=1):
+    """
+    Computes the bearing from north along a series of points.
+
+    Parameters
+    ----------
+    gdf : geopandas.GeoDataFrame
+        A geodataframe of points.
+
+    Returns
+    -------
+    bearing : numpy.array
+
+    """
+
+    HALF_PI = numpy.pi * 0.5
+    TWO_PI = 2 * numpy.pi
+
+    x = gdf['geometry'].x - gdf['geometry'].x.shift(periods=shift)
+    y = gdf['geometry'].y - gdf['geometry'].y.shift(periods=shift)
+
+    NE = (x >= 0) & (y >= 0)
+    SE = (x >= 0) & (y < 0)
+    SW = (x < 0) & (y < 0)
+    NW = (x < 0) & (y >= 0)
+
+    bearing = numpy.arctan(y / x).abs()
+    directions = [NE, SE, SW, NW]
+    corrections = [
+        HALF_PI - bearing,
+        HALF_PI + bearing,
+        TWO_PI - HALF_PI - bearing,
+        TWO_PI - HALF_PI + bearing,
+    ]
+    for direction, correction in zip(directions, corrections):
+        bearing = numpy.where(direction, correction, bearing)
+
+    return bearing
