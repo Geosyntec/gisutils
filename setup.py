@@ -100,7 +100,7 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 3.5',
     'Programming Language :: Python :: 3.6',
 ]
-INSTALL_REQUIRES = ['numpy', 'matplotlib', 'fiona', 'rasterio']
+INSTALL_REQUIRES = ['numpy', 'matplotlib', 'shapely', 'fiona', 'rasterio', 'geopandas']
 PACKAGE_DATA = {}
 
 
