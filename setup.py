@@ -7,7 +7,44 @@
 
 import os
 import sys
+from textwrap import indent
 from setuptools import setup, find_packages
+
+
+WINDOWS = """\
+    "taskName": "test",
+    "isBuildCommand": true,
+    "isShellCommand": true,
+    "isTestCommand": true,
+    "command": "activate",
+    "args": [
+        "plmpy",
+        "&&",
+        "python",
+        "setup.py",
+        "test",
+        "--cov",
+        "--pep8"
+    ]
+"""
+
+UNIX = """\
+    "taskName": "test",
+    "isBuildCommand": true,
+    "isShellCommand": true,
+    "isTestCommand": true,
+    "command": "source",
+    "args": [
+        "activate",
+        "plmpy",
+        "&&",
+        "python",
+        "setup.py",
+        "test",
+        "--cov",
+        "--pep8"
+    ]
+"""
 
 
 TEMPLATE = """\
@@ -20,14 +57,7 @@ TEMPLATE = """\
     "suppressTaskName": false,
     "tasks": [
         {{
-            "taskName": "test",
-            "command": "{pyexec:s}",
-            "args": [
-                "setup.py",
-                "test",
-                "--cov",
-                "--pep8"
-            ]
+{cmd:s}
         }},
         {{
             "taskName": "notebooks",
@@ -70,7 +100,7 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 3.5',
     'Programming Language :: Python :: 3.6',
 ]
-INSTALL_REQUIRES = ['numpy', 'matplotlib', 'fiona', 'rasterio']
+INSTALL_REQUIRES = ['numpy', 'matplotlib', 'shapely', 'fiona', 'rasterio', 'geopandas']
 PACKAGE_DATA = {}
 
 
@@ -97,8 +127,14 @@ elif sys.argv[1] == "config":
     else:
         name = sys.argv[3]
 
+    if sys.platform.startswith('win'):
+        cmd = WINDOWS
+    else:
+        cmd = UNIX
+
+    prefix = ' ' * 8
     python = '/'.join(sys.executable.split(os.path.sep))
-    config = TEMPLATE.format(pyexec=python, modulename=name)
+    config = TEMPLATE.format(cmd=indent(cmd, prefix), pyexec=python, modulename=name)
 
     with open(filepath, 'w') as configfile:
         configfile.write(config)
