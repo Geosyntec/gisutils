@@ -5,6 +5,7 @@ import pytest
 import numpy.testing as nptest
 
 from gisutils import validate
+from .helpers import raises
 
 
 @pytest.mark.parametrize(('value', 'expected'), [
@@ -48,12 +49,9 @@ def test_mpl_axes_with_None():
     ([], None, ValueError),
 ])
 def test_non_empty_list_default(obj, expected, err):
-    if err is None:
+    with raises(err):
         result = validate.non_empty_list(obj)
         assert result == expected
-    else:
-        with pytest.raises(err):
-            validate.non_empty_list(obj)
 
 
 @pytest.mark.parametrize('obj', [None, []])
