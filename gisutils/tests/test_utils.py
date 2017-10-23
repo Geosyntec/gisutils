@@ -31,6 +31,6 @@ def test_find_row_in_array(column, value, expected, err):
         )
         result = utils.find_row_in_array(input_array, column, value)
         if expected is None:
-            expected = result
-
-        assert list(result) == list(expected)
+            assert expected is result
+        else:
+            assert list(result) == list(expected)
