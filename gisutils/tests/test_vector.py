@@ -11,6 +11,7 @@ from shapely import geometry
 import geopandas
 
 from gisutils import vector
+from .helpers import raises
 
 
 @pytest.fixture
@@ -81,16 +82,16 @@ def test_glue_lines_together_basic(segments_gdf, seed, expected_pairs, with_extr
     expected = wkt.loads(gstr)
 
     # check that an unattached segment is dropped
+    error = None
     if with_extra:
+        error = ValueError
         line = geometry.LineString([(50, 50), (50, 50)])
         segments_gdf = pandas.concat([
             segments_gdf,
             geopandas.GeoDataFrame(data={'segment': [4]}, geometry=[line])
         ], ignore_index=True)
-        with pytest.raises(ValueError):
-            result, gdf = vector.glue_lines_together(segments_gdf, seed, 'segment')
 
-    else:
+    with raises(error):
         result, gdf = vector.glue_lines_together(segments_gdf, seed, 'segment')
         assert result.equals(expected)
         assert isinstance(gdf, geopandas.GeoDataFrame)
