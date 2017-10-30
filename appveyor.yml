@@ -28,7 +28,6 @@ install:
     - "conda config --add channels conda-forge"
     - "activate test"
 
-
 build: false
 
 test_script:
