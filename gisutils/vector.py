@@ -5,6 +5,7 @@ import geopandas
 from shapely import geometry
 
 from gisutils import validate
+from gisutils import algo
 
 
 def load(data_source):
@@ -207,3 +208,79 @@ def glue_lines_together(gdf, seed_id, id_col, geom_col='geometry', max_tries=Non
             success += 1
 
     return line, extra_geoms
+
+
+def line_to_point(line_geom,interval_dist):
+    """
+    Create a series of points x distance apart along a line geometry
+    """
+    points = [line_geom.interpolate(d) for d in numpy.arange(0, line_geom.length, interval_dist)]
+    return points
+
+def compute_ortho_bearing(bearings):
+    """
+    Create orthogonal bearing from the bearings of points on a polyline
+    """
+    ortho_bearing = (bearings - numpy.pi*0.5)%(2*numpy.pi)
+    return ortho_bearing
+
+def draw_ortho_line_to_bank(ct_pt_geom, bank_geom, ortho_bearing, step, buffer_dist, max_dist):
+    """ 
+    Search for intersects between the orthogonal lines and the river banks until max_dist is reached.
+    Create ortho lines by extending the ortho lines from the intersects by buffer_dist from the intersect
+    """
+    ortho_opposite = (ortho_bearing - numpy.pi)%(2*numpy.pi)
+    ortho_ln_set = []
+    for i in range(1,len(ct_pt_geom)):
+        dist = 1
+        start_pt = ct_pt_geom[i]
+        end_pt1 = geometry.Point(start_pt.x + numpy.sin(ortho_bearing[i])*dist*step, start_pt.y + numpy.cos(ortho_bearing[i])*dist*step)
+        ortho_line1 = geometry.LineString([start_pt,end_pt1])
+        while (ortho_line1.crosses(bank_geom) == False) and (dist < max_dist):
+            dist += 1
+            end_pt1 = geometry.Point(start_pt.x + numpy.sin(ortho_bearing[i])*dist*step, start_pt.y + numpy.cos(ortho_bearing[i])*dist*step)
+            ortho_line1 = geometry.LineString([start_pt,end_pt1])
+        end_pt1 = geometry.Point(end_pt1.x + numpy.sin(ortho_bearing[i])*buffer_dist, end_pt1.y + numpy.cos(ortho_bearing[i])*buffer_dist)
+        
+        
+        dist = 1
+        end_pt2 = geometry.Point(start_pt.x + numpy.sin(ortho_opposite[i])*dist*step, start_pt.y + numpy.cos(ortho_opposite[i])*dist*step)
+        ortho_line2 = geometry.LineString([start_pt,end_pt2])
+        while ortho_line2.crosses(bank_geom) == False and (dist < max_dist):
+            dist += 1
+            end_pt2 = geometry.Point(start_pt.x + numpy.sin(ortho_opposite[i])*dist*step, start_pt.y + numpy.cos(ortho_opposite[i])*dist*step)
+            ortho_line2 = geometry.LineString([start_pt,end_pt2])
+        end_pt2 = geometry.Point(end_pt2.x + numpy.sin(ortho_opposite[i])*buffer_dist, end_pt2.y + numpy.cos(ortho_opposite[i])*buffer_dist)
+        
+
+        ortho_line = geometry.LineString([end_pt1, end_pt2])
+        ortho_ln_set.append(ortho_line)
+    return ortho_ln_set
+
+def create_ortho_grid(ct_ln_geom, bank_geom, step, grid_dist, buffer_dist, max_dist):
+    """   
+    Computes orthogonal lines at given distance interval to a river center line up to the river bank and add buffer distance 
+
+    Parameters
+    ----------
+    gdf : geopandas.GeoDataFrame
+    ----------
+    Input:
+        1. River center line (gdf-linestring)
+        2. Bank polygon (gdf-polygon)
+        3. Search step used to search from river center to the bank (float)
+        4. Length of each reach in the grid (int)
+        5. Buffer distance extended outside of the river surface area (float)
+        6. Maximum search distance for polygon/ortho line (int)
+    Returns
+    
+    ortho_ln_set: list of lines as shapely geometry
+    -------
+    
+    """
+    ct_pt_geom = line_to_point(ct_ln_geom, grid_dist)
+    gdf_ct_pt = geopandas.GeoDataFrame(geometry=ct_pt_geom)
+    bearings = algo.bearing_from_north(gdf_ct_pt, shift=1)
+    ortho_bearing = compute_ortho_bearing(bearings)
+    ortho_ln_set = draw_ortho_line_to_bank(ct_pt_geom, bank_geom, ortho_bearing, step, buffer_dist, max_dist)
+    return ortho_ln_set

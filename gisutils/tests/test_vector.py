@@ -96,3 +96,11 @@ def test_glue_lines_together_basic(segments_gdf, seed, expected_pairs, with_extr
         assert result.equals(expected)
         assert isinstance(gdf, geopandas.GeoDataFrame)
         assert gdf.shape[0] == 0
+
+def test_create_ortho_grid():
+    line = geometry.LineString([(0,0),(3,3),(6,5),(10,5),(12,7),(12,15)])
+    bank = geometry.Polygon([(-2,0),(0,3),(6,6),(11,16),(13,16),(13,3),(4,1),(-1,-1),(-2,0)])
+    ortho_ln_set = vector.create_ortho_grid(line, bank, step = 0.01, grid_dist = 1, buffer_dist = 1, max_dist = 10)
+    gdf_ortho_ln = geopandas.GeoDataFrame(geometry=ortho_ln_set)
+    print(gdf_ortho_ln)
+    return gdf_ortho_ln 
